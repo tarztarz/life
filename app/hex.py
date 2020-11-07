@@ -17,6 +17,12 @@ class Hex:
 	def __repr__(self):
 		return "{q: '{}', r: '{}', s: '{}'}".format(self.q, self.r, self.s)
 
+	def __hash__(self):
+		return hash((self.q, self.r))
+
+	def __eq__(self, other:'Hex'):
+		return (self.q, self.r) == (other.q, other.r)
+
 	def __add__(self, val:'Hex'):
 		assert(type(val) is Hex), 'cannot add {} to Hex'.format(type(val))
 		return Hex(self.q + val.q, self.r + val.r, self.s + val.s)
@@ -151,7 +157,14 @@ def polygon_corners(layout:Layout, h:Hex):
 		corners.append(Point(center.x + offset.x, center.y + offset.y))
 	return corners
 
-
+def generate_hex_map(radius:int):
+	hex_map = {}
+	for q in range(-radius, radius + 1):
+		ri = max(-radius, -q - radius)
+		rf = min(radius, -q + radius)
+		for r in range(ri, rf + 1):
+			hex_map[Hex(q, r, -q - r)] = ''
+	return hex_map
 
 
 # Tests
@@ -214,6 +227,9 @@ def test_layout():
 	pointy = Layout(layout_pointy, Point(10.0, 15.0), Point(35.0, 71.0))
 	equal_hex("layout", h, pixel_to_hex(pointy, hex_to_pixel(pointy, h)))
 
+def test_generate_hex_map():
+	equal_int('generate_hex_map', 37, len(generate_hex_map(3).keys()))
+
 def test_all():
 	test_hex_arithmetic()
 	test_hex_direction()
@@ -225,6 +241,7 @@ def test_all():
 	test_hex_round()
 	test_hex_linedraw()
 	test_layout()
+	test_generate_hex_map()
 
 if __name__ == '__main__':
 	test_all()
