@@ -1,15 +1,17 @@
 import pygame as pg
-import hex
+import land as ld
+import collections
 from typing import Dict, Any
 
 def main():
 
-	terrain_radius = 3
-	hex_map = hex.generate_hex_map(3)
-	layout = hex.Layout(hex.layout_pointy, hex.Point(20, 20), hex.Point(200, 200))
+	screen_size = 800
+	terrain_radius = 10
+
+	land = ld.Land(terrain_radius, screen_size)
 
 	pg.init()
-	screen = pg.display.set_mode((400, 400))
+	screen = pg.display.set_mode((screen_size, screen_size))
 	done = False
 	
 	while not done:
@@ -18,13 +20,13 @@ def main():
 						done = True
 		
 		#pg.draw.rect(screen, (0, 128, 255), pg.Rect(30, 30, 60, 60))
-		draw_terrain(screen, layout, hex_map)
+		draw_land(screen, land)
 
 		pg.display.flip()
 
-def draw_terrain(screen:pg.Surface, layout:hex.Layout, hex_map:Dict[hex.Hex, Any]):
-	for h in hex_map:
-		pg.draw.polygon(screen, (255, 255, 255), hex.polygon_corners(layout, h), width=1)
+def draw_land(screen:pg.Surface, land:ld.Land):
+	for p in land.map:
+		pg.draw.polygon(screen, (255, 255, 255), land.polygon_corners(p), width=1)
 
 if __name__ == "__main__":
 	main()
