@@ -10,7 +10,7 @@ class Land:
 		self.layout = pl.Layout(pl.layout_pointy, pl.Point(10, 10), pl.Point(screen_size // 2, screen_size // 2))
 
 		# replace this map to switch from hexes to i.e. squares
-		self.map = {p:Terrain() for p in pl.generate_hex_map(radius)}
+		self.map = {p:Terrain(p) for p in pl.generate_hex_map(radius)}
 		for k, v in self.map.items():
 			v.neighbors = self.neighborhood(k, v)
 		
@@ -22,11 +22,18 @@ class Land:
 				neighborhood[n_key] = self.map[n_key]
 		return neighborhood
 
-	def polygon_corners(self, p:'Polygon'):
-		return pl.polygon_corners(self.layout, p)
+	def polygon_corners(self, t:'Terrain'):
+		return pl.polygon_corners(self.layout, t.polygon)
+
+	def pixel_to_terrain(self, p:pl.Point):
+		polygon = pl.pixel_to_hex(self.layout, p)
+		if polygon in self.map:
+			return self.map[polygon]
+		return None
 
 class Terrain:
-	def __init__(self):
+	def __init__(self, p:'Polygon'):
+		self.polygon = p
 		self.smells = {}
 		self.emission = Emission({}, {})
 		self.neighbors = {}
