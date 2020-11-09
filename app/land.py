@@ -45,10 +45,10 @@ class Terrain:
 		return repr(self.polygon)
 
 	def __hash__(self):
-		return hash((self.q, self.r))
+		return hash(self.polygon)
 
 	def __eq__(self, other:'Terrain'):
-		return (self.q, self.r) == (other.q, other.r)
+		return (self.polygon) == (other.polygon)
 
 	def update_broadcast(self):
 		# update myself

@@ -12,6 +12,11 @@ class Land_Info:
 		self.color = color
 		self.redraw = True
 
+class Terrain_Info:
+	def __init__(self, color:Color):
+		self.color = color
+		self.redraw = True
+
 class Living_Info:
 	def __init__(self, color:Color, position:ld.Terrain):
 		self.color = color
@@ -52,20 +57,22 @@ def initialize_world(screen_size:int, land_radius:int):
 	return land, life
 
 def update_world(events:List, land:Dict, life:Dict[lv.Living, Living_Info]):
-	t_highlights = []
+	t_highlights = {}
 	for e in events:
 		if e.type == pg.MOUSEBUTTONDOWN: # move to update_state
 			if e.button == 1: # left click
 				p = Point(*pg.mouse.get_pos())
 				tar_terrain = land['land'].pixel_to_terrain(p)
-				t_highlights = tar_terrain.neighbors.values() if tar_terrain is not None else []
+				tar_terrain_neighbors = tar_terrain.neighbors if tar_terrain is not None else {}
+				h_color = Color(100, 100, 100)
+				t_highlights = {t:Terrain_Info(h_color) for (k, t) in tar_terrain_neighbors.items()}
 				land['info'].redraw = True
 				for living_info in life.values():
 					living_info.redraw = True
 	return t_highlights
 	
 
-def draw(screen:pg.Surface, land:Dict, life: Dict[lv.Living, Living_Info], terrain_highlights:Iterable[ld.Terrain]):
+def draw(screen:pg.Surface, land:Dict, life: Dict[lv.Living, Living_Info], terrain_highlights:Dict[ld.Terrain, Terrain_Info]):
 	if land['info'].redraw or any(info.redraw for info in life.values()):
 		screen.fill((0, 0, 0))
 		draw_life(screen, life, land['land'])
@@ -79,9 +86,9 @@ def draw_land(screen:pg.Surface, land:Dict):
 			pg.draw.polygon(screen, land['info'].color, land['land'].polygon_corners(t), width=1)
 		land['info'].redraw = False
 
-def draw_highlighted_terrain(screen:pg.Surface, terrain:Iterable[ld.Terrain], land:ld.Land):
-	for t in terrain:
-		pg.draw.polygon(screen, (100, 100, 100), land.polygon_corners(t), width=0)
+def draw_highlighted_terrain(screen:pg.Surface, terrain:Dict[ld.Terrain, Terrain_Info], land:ld.Land):
+	for t, t_info in terrain.items():
+		pg.draw.polygon(screen, t_info.color, land.polygon_corners(t), width=0)
 
 def draw_life(screen:pg.Surface, life:Dict[lv.Living, Living_Info], land:ld.Land):
 	for liv, info in life.items():
