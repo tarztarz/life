@@ -15,7 +15,7 @@ class Hex:
 		return 'Hex: ({}, {}, {})'.format(self.q, self.r, self.s)
 	
 	def __repr__(self):
-		return "{q: '{}', r: '{}', s: '{}'}".format(self.q, self.r, self.s)
+		return str(self)
 
 	def __hash__(self):
 		return hash((self.q, self.r))
@@ -84,7 +84,7 @@ class FractionalHex:
 		return 'FractionalHex: ({}, {}, {})'.format(self.q, self.r, self.s)
 	
 	def __repr__(self):
-		return "{q: '{}', r: '{}', s: '{}'}".format(self.q, self.r, self.s)
+		return str(self)
 
 	def round(self):
 		qi = round(self.q)

@@ -42,7 +42,7 @@ class Terrain:
 		return 'TUnit: ({})'.format('')
 	
 	def __repr__(self):
-		return "{i: '{}', d: '{}', k: '{}'}".format('','','')
+		return repr(self.polygon)
 
 	def __hash__(self):
 		return hash((self.q, self.r))

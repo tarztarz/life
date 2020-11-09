@@ -4,13 +4,19 @@ class Living:
 	def __init__(self, uid:int, name:str, position:'ld.Terrain'):
 		self.uid = uid
 		self.name = name
-		self.position
+		self.position = position
 
 	def __str__(self):
 		return 'LIVING: (name: {})'.format(self.name)
 	
 	def __repr__(self):
 		return "{uid: '{}', name: '{}}".format(self.uid, self.name)
+
+	def __hash__(self):
+		return hash(self.uid)
+
+	def __eq__(self, other:'Living'):
+		return self.uid == other.uid
 
 	def generateSmell(self):
 		return Smell(self, 100)
