@@ -12,7 +12,7 @@ class Hex:
 		self.s = s
 
 	def __str__(self):
-		return 'Hex: ({}, {}, {})'.format(self.q, self.r, self.s)
+		return 'HEX({}, {}, {})'.format(self.q, self.r, self.s)
 	
 	def __repr__(self):
 		return str(self)
