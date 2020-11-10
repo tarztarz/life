@@ -50,7 +50,8 @@ def initialize_world(screen_size:int, land_radius:int):
 			'info': Draw_Info(pg.Color(255, 255, 255))}
 
 	life = {}
-	pos = list(land['land'].map.values())[10]
+	#pos = list(land['land'].map.values())[10]
+	pos = land['land'].map[(0, 0)]
 	life[lv.Living('Adam', 'Adam', pos)] = Draw_Info(pg.Color(0, 255, 0))
 	pos2 = list(land['land'].map.values())[-10]
 	life[lv.Living('Eve', 'Eve', pos2)] = Draw_Info(pg.Color(255, 0, 0))

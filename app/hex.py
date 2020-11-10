@@ -20,8 +20,11 @@ class Hex:
 	def __hash__(self):
 		return hash((self.q, self.r))
 
-	def __eq__(self, other:'Hex'):
-		return (self.q, self.r) == (other.q, other.r)
+	def __eq__(self, other:Any):
+		if (isinstance(other, Hex)):
+			return (self.q, self.r) == (other.q, other.r)
+		else:
+			return (self.q, self.r) == (other[0], other[1])
 
 	def __add__(self, val:'Hex'):
 		assert(type(val) is Hex), 'cannot add {} to Hex'.format(type(val))
