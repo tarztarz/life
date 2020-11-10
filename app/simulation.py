@@ -6,20 +6,9 @@ from typing import Dict, List, Iterable
 
 Point = collections.namedtuple('Point', ('x', 'y'))
 
-class Land_Info:
+class Draw_Info:
 	def __init__(self, color:pg.Color):
 		self.color = color
-		self.redraw = True
-
-class Terrain_Info:
-	def __init__(self, color:pg.Color):
-		self.color = color
-		self.redraw = True
-
-class Living_Info:
-	def __init__(self, color:pg.Color, position:ld.Terrain):
-		self.color = color
-		self.position = position
 		self.redraw = True
 
 def main():
@@ -58,17 +47,19 @@ def main():
 
 def initialize_world(screen_size:int, land_radius:int):
 	land = {'land': ld.Land(land_radius, screen_size),
-			'info': Land_Info(pg.Color(255, 255, 255))}
+			'info': Draw_Info(pg.Color(255, 255, 255))}
 
 	life = {}
 	pos = list(land['land'].map.values())[10]
-	life[lv.Living('Adam', 'Adam', pos)] = Living_Info(pg.Color(0, 255, 0), pos)
+	life[lv.Living('Adam', 'Adam', pos)] = Draw_Info(pg.Color(0, 255, 0))
 	pos2 = list(land['land'].map.values())[-10]
-	life[lv.Living('Eve', 'Eve', pos2)] = Living_Info(pg.Color(255, 0, 0), pos2)
+	life[lv.Living('Eve', 'Eve', pos2)] = Draw_Info(pg.Color(255, 0, 0))
+	pos3 = list(land['land'].map.values())[12]
+	life[lv.Living('Snake Plissken', 'Snake Plissken', pos3)] = Draw_Info(pg.Color(0, 0, 255))
 
 	return land, life
 
-def update_world(life: Dict[lv.Living, Living_Info], land:Dict):
+def update_world(life: Dict[lv.Living, Draw_Info], land:Dict):
 	for l, l_info in life.items():
 		l.update()
 		l_info.redraw = True
@@ -84,7 +75,7 @@ def update_world(life: Dict[lv.Living, Living_Info], land:Dict):
 
 def handle_events(events:List,
 				land:Dict,
-				life:Dict[lv.Living, Living_Info]
+				life:Dict[lv.Living, Draw_Info]
 				):
 
 	t_highlights = {}
@@ -100,23 +91,26 @@ def handle_events(events:List,
 				for living_info in life.values():
 					living_info.redraw = True
 
-	for living, l_info in life.items():
-		for t in land['land'].map.values():
-			if living in t.smells:
-				color = pg.Color(l_info.color)
-				inv_strength = round((100 -  t.smells[living].strength) * 2.55)
-				color.r = max(0, color.r - inv_strength)
-				color.g = max(0, color.g - inv_strength)
-				color.b = max(0, color.b - inv_strength)
-				t_highlights[t] = Terrain_Info(color)
+	
+	for t in land['land'].map.values():
+		if t.smells:
+			max_smell_strength = max(s.strength for s in t.smells.values())
+			strongest_smell = next(smell for smell in t.smells.values() if smell.strength == max_smell_strength)
+			l = strongest_smell.source
+			color = pg.Color(life[l].color)
+			inv_strength = round((100 -  max_smell_strength) * 2.55)
+			color.r = max(0, color.r - inv_strength)
+			color.g = max(0, color.g - inv_strength)
+			color.b = max(0, color.b - inv_strength)
+			t_highlights[t] = Draw_Info(color)
 
 	return t_highlights
 	
 
 def draw(screen:pg.Surface,
 		land:Dict,
-		life: Dict[lv.Living, Living_Info],
-		terrain_highlights:Dict[ld.Terrain, Terrain_Info]
+		life: Dict[lv.Living, Draw_Info],
+		terrain_highlights:Dict[ld.Terrain, Draw_Info]
 		):
 
 	if land['info'].redraw or any(info.redraw for info in life.values()):
@@ -132,14 +126,14 @@ def draw_land(screen:pg.Surface, land:Dict):
 			pg.draw.polygon(screen, land['info'].color, land['land'].polygon_corners(t), width=1)
 		land['info'].redraw = False
 
-def draw_highlighted_terrain(screen:pg.Surface, terrain:Dict[ld.Terrain, Terrain_Info], land:ld.Land):
+def draw_highlighted_terrain(screen:pg.Surface, terrain:Dict[ld.Terrain, Draw_Info], land:ld.Land):
 	for t, t_info in terrain.items():
 		pg.draw.polygon(screen, t_info.color, land.polygon_corners(t), width=0)
 
-def draw_life(screen:pg.Surface, life:Dict[lv.Living, Living_Info], land:ld.Land):
+def draw_life(screen:pg.Surface, life:Dict[lv.Living, Draw_Info], land:ld.Land):
 	for liv, info in life.items():
 		if info.redraw:
-			draw_living(screen, info.position, info.color, land)
+			draw_living(screen, liv.position, info.color, land)
 			info.redraw = False
 
 def draw_living(screen:pg.Surface, position:ld.Terrain, color:pg.Color, land:ld.Land):
