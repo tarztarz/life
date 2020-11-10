@@ -6,6 +6,7 @@ class Living:
 		self.uid = uid
 		self.name = name
 		self.position = position
+		self.path = []
 		self.smell_decay_strength = 20
 
 	def __str__(self):
@@ -23,12 +24,13 @@ class Living:
 	def generateSmell(self):
 		return Smell(self, 100)
 
-	def generateSound(self):
-		return 100
+	def follow_path(self):
+		if len(self.path) > 0:
+			self.position = self.path.pop(0)
 	
 	def update(self):
-		#self.move()
 		self.position.smells[self] = self.generateSmell()
+		self.follow_path()
 
 Smell = collections.namedtuple('Smell', ('source', 'strength'))
 def decay_smell(smell:Smell):
