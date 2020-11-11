@@ -6,8 +6,11 @@ from typing import Dict
 Emission = collections.namedtuple('Emission', ('smells',))
 
 class Land:
-	def __init__(self, radius:int, screen_size:int):
-		self.layout = pl.Layout(pl.layout_pointy, pl.Point(10, 10), pl.Point(screen_size // 2, screen_size // 2))
+	def __init__(self, radius:int, screen_size:int, terrain_size:int):
+		self.terrain_size = terrain_size
+		self.layout = pl.Layout(pl.layout_pointy,
+								pl.Point(terrain_size, terrain_size),
+								pl.Point(screen_size // 2, screen_size // 2))
 
 		# replace this map to switch from hexes to i.e. squares
 		self.map = {p:Terrain(p) for p in pl.generate_hex_map(radius)}
@@ -24,6 +27,9 @@ class Land:
 
 	def polygon_corners(self, t:'Terrain'):
 		return pl.polygon_corners(self.layout, t.polygon)
+
+	def polygon_center(self, t:'Terrain'):
+		return pl.hex_to_pixel(self.layout, t.polygon)
 
 	def pixel_to_terrain(self, p:pl.Point):
 		polygon = pl.pixel_to_hex(self.layout, p)

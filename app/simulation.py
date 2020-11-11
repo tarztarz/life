@@ -11,15 +11,22 @@ class Draw_Info:
 		self.color = color
 		self.redraw = True
 
+class Living_Info:
+	def __init__(self, color:pg.Color, img:pg.Surface):
+		self.color = color
+		self.redraw = True
+		self.img = img
+
 def main():
 
 	screen_size = 800
-	land_radius = 6
+	land_radius = 10
 	world_pace_ms = 1000
+
+	pg.init()
 
 	land, life = initialize_world(screen_size, land_radius)
 
-	pg.init()
 	clock = pg.time.Clock()
 	screen = pg.display.set_mode((screen_size, screen_size))
 
@@ -44,9 +51,13 @@ def main():
 		draw(screen, land, life, terrain_highlights)
 		clock.tick(60)
 
+def living_img(text:str, text_size:int):
+	font = pg.font.SysFont(None, text_size)
+	return font.render(text, True, (255, 255, 255))
+
 
 def initialize_world(screen_size:int, land_radius:int):
-	land = {'land': ld.Land(land_radius, screen_size),
+	land = {'land': ld.Land(land_radius, screen_size, 20),
 			'info': Draw_Info(pg.Color(255, 255, 255))}
 
 	life = {}
@@ -58,13 +69,15 @@ def initialize_world(screen_size:int, land_radius:int):
 	p12 = list(p11.neighbors.values())[0]
 	p13 = list(p12.neighbors.values())[0]
 	l1.path = [p10, p11, p12, p13]
-	life[l1] = Draw_Info(pg.Color(0, 255, 0))
+	life[l1] = Living_Info(pg.Color(0, 255, 0), living_img(l1.uid, land['land'].terrain_size))
 
 	pos2 = list(land['land'].map.values())[-10]
-	life[lv.Living('Eve', 'Eve', pos2)] = Draw_Info(pg.Color(255, 0, 0))
+	l2 = lv.Living('Eve', 'Eve', pos2)
+	life[l2] = Living_Info(pg.Color(255, 0, 0), living_img(l2.uid, land['land'].terrain_size))
 
 	pos3 = list(land['land'].map.values())[12]
-	life[lv.Living('Snake Plissken', 'Snake Plissken', pos3)] = Draw_Info(pg.Color(0, 0, 255))
+	l3 = lv.Living('Plissken', 'Plissken', pos3)
+	life[l3] = Living_Info(pg.Color(0, 0, 255), living_img(l3.uid, land['land'].terrain_size))
 
 	return land, life
 
@@ -84,7 +97,7 @@ def update_world(life: Dict[lv.Living, Draw_Info], land:Dict):
 
 def handle_events(events:List,
 				land:Dict,
-				life:Dict[lv.Living, Draw_Info]
+				life:Dict[lv.Living, Living_Info]
 				):
 
 	t_highlights = {}
@@ -118,7 +131,7 @@ def handle_events(events:List,
 
 def draw(screen:pg.Surface,
 		land:Dict,
-		life: Dict[lv.Living, Draw_Info],
+		life: Dict[lv.Living, Living_Info],
 		terrain_highlights:Dict[ld.Terrain, Draw_Info]
 		):
 
@@ -142,11 +155,16 @@ def draw_highlighted_terrain(screen:pg.Surface, terrain:Dict[ld.Terrain, Draw_In
 def draw_life(screen:pg.Surface, life:Dict[lv.Living, Draw_Info], land:ld.Land):
 	for liv, info in life.items():
 		if info.redraw:
-			draw_living(screen, liv.position, info.color, land)
+			draw_living(screen, liv.position, info.color, info.img, land)
 			info.redraw = False
 
-def draw_living(screen:pg.Surface, position:ld.Terrain, color:pg.Color, land:ld.Land):
+def draw_living(screen:pg.Surface, position:ld.Terrain, color:pg.Color, img:pg.Surface, land:ld.Land):
 	pg.draw.polygon(screen, color, land.polygon_corners(position), width=0)
+
+	l_x, l_y = land.polygon_center(position)
+	img_w, img_h = img.get_size()
+	img_coord = (l_x - img_w//2, l_y - img_h//2)
+	screen.blit(img, img_coord)
 
 if __name__ == "__main__":
 	main()
