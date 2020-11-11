@@ -108,7 +108,7 @@ def handle_events(events:List,
 				tar_terrain = land['land'].pixel_to_terrain(p)
 				tar_terrain_neighbors = tar_terrain.neighbors if tar_terrain is not None else {}
 				h_color = pg.Color(100, 100, 100)
-				t_highlights = {t:Terrain_Info(h_color) for (k, t) in tar_terrain_neighbors.items()}
+				t_highlights = {t:Draw_Info(h_color) for (k, t) in tar_terrain_neighbors.items()}
 				land['info'].redraw = True
 				for living_info in life.values():
 					living_info.redraw = True
