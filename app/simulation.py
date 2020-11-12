@@ -122,15 +122,12 @@ def handle_events(events:List,
 		if t.smells:
 			max_smell_strength = max(s.strength for s in t.smells.values())
 			strongest_smell = next(smell for smell in t.smells.values() if smell.strength == max_smell_strength)
-			if strongest_smell.strength < 100:
-				l = strongest_smell.source
-				color = pg.Color(life[l].color)
-				inv_strength = round((100 -  max_smell_strength) * 2.55)
-				color.r = max(0, color.r - inv_strength)
-				color.g = max(0, color.g - inv_strength)
-				color.b = max(0, color.b - inv_strength)
-			else:
-				color = (255, 255, 255)
+			l = strongest_smell.source
+			color = pg.Color(life[l].color)
+			inv_strength = round((100 -  max_smell_strength) * 2.55)
+			color.r = max(0, color.r - inv_strength)
+			color.g = max(0, color.g - inv_strength)
+			color.b = max(0, color.b - inv_strength)
 			t_highlights[t] = Draw_Info(color)
 
 	return t_highlights
@@ -145,7 +142,7 @@ def draw(screen:pg.Surface,
 	if land['info'].redraw or any(info.redraw for info in life.values()):
 		screen.fill((0, 0, 0))
 		draw_highlighted_terrain(screen, terrain_highlights, land['land'])
-		#draw_life(screen, life, land['land'])
+		draw_life(screen, life, land['land'])
 		draw_land(screen, land)
 		pg.display.flip()
 
@@ -166,7 +163,7 @@ def draw_life(screen:pg.Surface, life:Dict[lv.Living, Draw_Info], land:ld.Land):
 			info.redraw = False
 
 def draw_living(screen:pg.Surface, position:ld.Terrain, color:pg.Color, img:pg.Surface, land:ld.Land):
-	pg.draw.polygon(screen, color, land.polygon_corners(position), width=0)
+	#pg.draw.polygon(screen, color, land.polygon_corners(position), width=0)
 
 	l_x, l_y = land.polygon_center(position)
 	img_w, img_h = img.get_size()
