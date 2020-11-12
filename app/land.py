@@ -19,10 +19,10 @@ class Land:
 		
 	def neighborhood(self, p:'Polygon', t:'Terrain'):
 		neighborhood = {}
-		for d in range(len(pl.Directions)):
-			n_key = p.neighbor(d)
-			if (n_key in self.map):
-				neighborhood[n_key] = self.map[n_key]
+		for direction in range(len(pl.Directions)):
+			n_coords = p.neighbor(direction)
+			if (n_coords in self.map):
+				neighborhood[pl.Directions[direction]] = self.map[n_coords]
 		return neighborhood
 
 	def polygon_corners(self, t:'Terrain'):
@@ -42,7 +42,7 @@ class Terrain:
 		self.polygon = p
 		self.smells = {}
 		self.emission = Emission({})
-		self.neighbors = {}
+		self.neighbors = {} #Dict[Polygon, Terrain]
 
 	def __str__(self):
 		return 'TERRAIN({})'.format(self.polygon)
@@ -94,6 +94,11 @@ class Terrain:
 
 		# so, terrains are emitting correectly, but the neighbors are not receiving the right emissions... who knows why
 
+	def direction_to(self, neighbor:'Terrain'):
+		return neighbor.polygon - self.polygon
+
+	def neighbor(self, direction:'Polygon'):
+		return self.neighbors[direction]
 
 
 

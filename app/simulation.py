@@ -20,7 +20,7 @@ class Living_Info:
 def main():
 
 	screen_size = 800
-	land_radius = 10
+	land_radius = 5
 	world_pace_ms = 1000
 
 	pg.init()
@@ -64,6 +64,7 @@ def initialize_world(screen_size:int, land_radius:int):
 
 	pos1 = land['land'].map[(0, 0)]
 	l1 = lv.Living('Adam', 'Adam', pos1)
+	l1.state = lv.LivingState.SEARCHING
 	p10 = list(l1.position.neighbors.values())[0]
 	p11 = list(p10.neighbors.values())[0]
 	p12 = list(p11.neighbors.values())[0]
