@@ -83,16 +83,19 @@ def initialize_world(screen_size:int, land_radius:int):
 	return land, life
 
 def update_world(life: Dict[lv.Living, Draw_Info], land:Dict):
-	for l, l_info in life.items():
-		l.update()
-		l_info.redraw = True
-
 	for terrain in land['land'].map.values():
 		terrain.decay()
 		terrain.broadcast()
 
 	for terrain in land['land'].map.values():
 		terrain.update()
+
+	for l, l_info in life.items():
+		l.move()
+		l_info.redraw = True
+
+	for l, l_info in life.items():
+		l.act()
 
 	land['info'].redraw = True
 
@@ -119,12 +122,15 @@ def handle_events(events:List,
 		if t.smells:
 			max_smell_strength = max(s.strength for s in t.smells.values())
 			strongest_smell = next(smell for smell in t.smells.values() if smell.strength == max_smell_strength)
-			l = strongest_smell.source
-			color = pg.Color(life[l].color)
-			inv_strength = round((100 -  max_smell_strength) * 2.55)
-			color.r = max(0, color.r - inv_strength)
-			color.g = max(0, color.g - inv_strength)
-			color.b = max(0, color.b - inv_strength)
+			if strongest_smell.strength < 100:
+				l = strongest_smell.source
+				color = pg.Color(life[l].color)
+				inv_strength = round((100 -  max_smell_strength) * 2.55)
+				color.r = max(0, color.r - inv_strength)
+				color.g = max(0, color.g - inv_strength)
+				color.b = max(0, color.b - inv_strength)
+			else:
+				color = (255, 255, 255)
 			t_highlights[t] = Draw_Info(color)
 
 	return t_highlights
@@ -139,7 +145,7 @@ def draw(screen:pg.Surface,
 	if land['info'].redraw or any(info.redraw for info in life.values()):
 		screen.fill((0, 0, 0))
 		draw_highlighted_terrain(screen, terrain_highlights, land['land'])
-		draw_life(screen, life, land['land'])
+		#draw_life(screen, life, land['land'])
 		draw_land(screen, land)
 		pg.display.flip()
 
