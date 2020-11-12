@@ -8,6 +8,7 @@ Emission = collections.namedtuple('Emission', ('smells',))
 class Land:
 	def __init__(self, radius:int, screen_size:int, terrain_size:int):
 		self.terrain_size = terrain_size
+		self.radius = radius
 		self.layout = pl.Layout(pl.layout_pointy,
 								pl.Point(terrain_size, terrain_size),
 								pl.Point(screen_size // 2, screen_size // 2))
@@ -16,6 +17,12 @@ class Land:
 		self.map = {p:Terrain(p) for p in pl.generate_hex_map(radius)}
 		for k, v in self.map.items():
 			v.neighbors = self.neighborhood(k, v)
+
+	def __repr__(self):
+		return 'Land(radius:{}, unit_size:{})'.format(self.radius, self.terrain_size)
+
+	def __str__(self):
+		return repr(self)
 		
 	def neighborhood(self, p:'Polygon', t:'Terrain'):
 		neighborhood = {}
@@ -44,11 +51,11 @@ class Terrain:
 		self.emission = Emission({})
 		self.neighbors = {} #Dict[Polygon, Terrain]
 
-	def __str__(self):
-		return 'TERRAIN({})'.format(self.polygon)
-	
 	def __repr__(self):
-		return repr(self.polygon)
+		return 'Terrain(coords:{}, smells:{})'.format(self.polygon, len(self.smells))
+
+	def __str__(self):
+		return '{}'.format(self.polygon)
 
 	def __hash__(self):
 		return hash(self.polygon)

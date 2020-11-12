@@ -1,7 +1,7 @@
-import collections
 import random
 import land as ld
 from enum import Enum
+from typing import NamedTuple
 
 class LivingState(Enum): # TODO: implement as class with getter and setters
 	SEARCHING = 1
@@ -19,11 +19,11 @@ class Living:
 		self.hunt_smell = None #Smell / change to aura later
 		self.smell_decay_strength = 20
 
-	def __str__(self):
-		return 'LIVING(name: {})'.format(self.name)
-	
 	def __repr__(self):
-		return str(self)
+		return 'Living(uid:{}, name:{}, position:{}, state:{})'.format(self.uid, self.name, self.position, self.state)
+	
+	def __str__(self):
+		return '{} at {} {}'.format(self.name, self.position, self.state)
 
 	def __hash__(self):
 		return hash(self.uid)
@@ -45,7 +45,7 @@ class Living:
 			interesting_smells = list(x for x in self.position.smells.values() if x.source != self)
 			if len(interesting_smells) > 0:
 				self.hunt_smell = max(interesting_smells, key=lambda x: x.strength)
-				print('{} caught a scent! {}'.format(self, self.hunt_smell))
+				print('{} caught a scent: {}'.format(self, self.hunt_smell))
 				self.state = LivingState.HUNTING
 
 		elif self.state == LivingState.HUNTING:
@@ -70,7 +70,7 @@ class Living:
 			if len(step_candidates) > 0:
 				next_step = max(step_candidates, key=lambda x: x.smells[prey].strength)
 				print('current: {} ({})'.format(self.position, self.position.smells[prey].strength))
-				print('candidates:\n')
+				print('candidates:')
 				for candidate in step_candidates:
 					print('{} (strength: {})'.format(candidate, candidate.smells[prey].strength))
 				print('next_step: {}'.format(next_step))
@@ -87,6 +87,15 @@ class Living:
 		self.update_state()
 		self.update_path()
 
-Smell = collections.namedtuple('Smell', ('source', 'strength'))
+class Smell(NamedTuple):
+	source: Living
+	strength: int
+
+	def __repr__(self):
+		return 'Smell(source:{}, strength:{})'.format(self.source, self.strength)
+	
+	def __str__(self):
+		return 'smell from {} with {} strength'.format(self.source, self.strength)
+
 def decay_smell(smell:Smell):
 	return Smell(smell.source, smell.strength - smell.source.smell_decay_strength)

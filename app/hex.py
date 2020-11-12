@@ -10,12 +10,12 @@ class Hex:
 		self.q = q
 		self.r = r
 		self.s = s
-
-	def __str__(self):
-		return 'HEX({}, {})'.format(self.q, self.r)
 	
 	def __repr__(self):
-		return str(self)
+		return 'Hex(q:{}, r:{})'.format(self.q, self.r)
+
+	def __str__(self):
+		return '({}, {})'.format(self.q, self.r)
 
 	def __hash__(self):
 		return hash((self.q, self.r))
@@ -83,11 +83,11 @@ class FractionalHex:
 		self.r = r
 		self.s = s
 
-	def __str__(self):
-		return 'FractionalHex: ({}, {}, {})'.format(self.q, self.r, self.s)
-	
 	def __repr__(self):
-		return str(self)
+		return 'FractionalHex(q:{}, r:{})'.format(self.q, self.r)
+
+	def __str__(self):
+		return '({}, {})'.format(self.q, self.r)
 
 	def round(self):
 		qi = round(self.q)
