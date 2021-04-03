@@ -1,4 +1,5 @@
 import pygame as pg
+import terrain as te
 import land as ld
 import living as lv
 import collections
@@ -136,7 +137,7 @@ def handle_events(events:List,
 def draw(screen:pg.Surface,
 		land:Dict,
 		life: Dict[lv.Living, Living_Info],
-		terrain_highlights:Dict[ld.Terrain, Draw_Info]
+		terrain_highlights:Dict[te.Terrain, Draw_Info]
 		):
 
 	if land['info'].redraw or any(info.redraw for info in life.values()):
@@ -152,7 +153,7 @@ def draw_land(screen:pg.Surface, land:Dict):
 			pg.draw.polygon(screen, land['info'].color, land['land'].polygon_corners(t), width=1)
 		land['info'].redraw = False
 
-def draw_highlighted_terrain(screen:pg.Surface, terrain:Dict[ld.Terrain, Draw_Info], land:ld.Land):
+def draw_highlighted_terrain(screen:pg.Surface, terrain:Dict[te.Terrain, Draw_Info], land:ld.Land):
 	for t, t_info in terrain.items():
 		pg.draw.polygon(screen, t_info.color, land.polygon_corners(t), width=0)
 
@@ -162,7 +163,7 @@ def draw_life(screen:pg.Surface, life:Dict[lv.Living, Draw_Info], land:ld.Land):
 			draw_living(screen, liv.position, info.color, info.img, land)
 			info.redraw = False
 
-def draw_living(screen:pg.Surface, position:ld.Terrain, color:pg.Color, img:pg.Surface, land:ld.Land):
+def draw_living(screen:pg.Surface, position:te.Terrain, color:pg.Color, img:pg.Surface, land:ld.Land):
 	#pg.draw.polygon(screen, color, land.polygon_corners(position), width=0)
 
 	l_x, l_y = land.polygon_center(position)
