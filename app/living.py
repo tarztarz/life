@@ -40,19 +40,29 @@ class Living:
 			self.position = self.path.pop(0)
 			self.last_direction = last_position.direction_to(self.position)
 
+	def set_state(self, lstate:LivingState, aura:'Smell' = None): #TODO smell, for now
+		if lstate == LivingState.SEARCHING:
+			self.hunt_smell = None
+			self.state = LivingState.SEARCHING
+		elif lstate == LivingState.HUNTING:
+			self.hunt_smell = aura
+			self.state = LivingState.HUNTING
+		elif lstate == LivingState.RESTING:
+			self.hunt_smell = None
+			self.state = LivingState.RESTING
+
 	def update_state(self): # search for whatever it is that drives me. Implement simple any smell search first
 		if self.state == LivingState.SEARCHING:
 			interesting_smells = list(x for x in self.position.smells.values() if x.source != self)
 			if len(interesting_smells) > 0:
-				self.hunt_smell = max(interesting_smells, key=lambda x: x.strength)
+				strongest_smell = max(interesting_smells, key=lambda x: x.strength)
+				self.set_state(LivingState.HUNTING, strongest_smell)
 				print('{} caught a scent: {}'.format(self, self.hunt_smell))
-				self.state = LivingState.HUNTING
 
 		elif self.state == LivingState.HUNTING:
 			prey = self.hunt_smell.source
 			if prey not in self.position.smells:
-				self.hunt_smell = None
-				self.state = LivingState.SEARCHING
+				self.set_state(LivingState.SEARCHING)
 				print('{} lost its prey!'.format(self))
 				
 			elif self.position.smells[prey].strength > self.hunt_smell.strength:
