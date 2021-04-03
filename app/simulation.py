@@ -2,21 +2,30 @@ import pygame as pg
 import terrain as te
 import land as ld
 import living as lv
+
 import collections
 from typing import Dict, List, Iterable
+from dataclasses import dataclass
 
 Point = collections.namedtuple('Point', ('x', 'y'))
 
-class Draw_Info:
-	def __init__(self, color:pg.Color):
-		self.color = color
-		self.redraw = True
+@dataclass
+class Terrain_package:
+	terrain: te.Terrain
+	color: pg.Color
 
-class Living_Info:
-	def __init__(self, color:pg.Color, img:pg.Surface):
-		self.color = color
-		self.redraw = True
-		self.img = img
+@dataclass
+class Land_package:
+	land: ld.Land
+	color: pg.Color
+	redraw: bool = True
+
+@dataclass
+class Living_package:
+	living: lv.Living
+	color: pg.Color
+	img: pg.Surface
+	redraw: bool = True
 
 def main():
 
@@ -26,7 +35,7 @@ def main():
 
 	pg.init()
 
-	land, life = initialize_world(screen_size, land_radius)
+	land_pack, life_packs = initialize_world(screen_size, land_radius)
 
 	clock = pg.time.Clock()
 	screen = pg.display.set_mode((screen_size, screen_size))
@@ -46,10 +55,10 @@ def main():
 			print('elapsed_time: {}'.format(elapsed_time))
 			print('q: {}, mod: {}'.format(q, mod))
 			for i in range(q):
-				update_world(life, land)
+				update_world(life_packs, land_pack)
 			elapsed_time = mod
-		terrain_highlights = handle_events(events, land, life)
-		draw(screen, land, life, terrain_highlights)
+		terrain_highlights = handle_events(events, land_pack, life_packs)
+		draw(screen, land_pack, life_packs, terrain_highlights)
 		clock.tick(60)
 
 def living_img(text:str, text_size:int):
@@ -58,12 +67,12 @@ def living_img(text:str, text_size:int):
 
 
 def initialize_world(screen_size:int, land_radius:int):
-	land = {'land': ld.Land(land_radius, screen_size, 20),
-			'info': Draw_Info(pg.Color(255, 255, 255))}
+	land_pack = Land_package(land = ld.Land(land_radius, screen_size, 20),
+				color = pg.Color(255, 255, 255))
 
-	life = {}
+	life_packs = {}
 
-	pos1 = land['land'].map[(0, 0)]
+	pos1 = land_pack.land.map[(0, 0)]
 	l1 = lv.Living('Adam', 'Adam', pos1)
 	l1.state = lv.LivingState.SEARCHING
 	p10 = list(l1.position.neighbors.values())[0]
@@ -71,38 +80,47 @@ def initialize_world(screen_size:int, land_radius:int):
 	p12 = list(p11.neighbors.values())[0]
 	p13 = list(p12.neighbors.values())[0]
 	l1.path = [p10, p11, p12, p13]
-	life[l1] = Living_Info(pg.Color(0, 255, 0), living_img(l1.uid, land['land'].terrain_size))
+	life_packs[l1] = Living_package(living = l1,
+							color = pg.Color(0, 255, 0),\
+							img = living_img(l1.uid, land_pack.land.terrain_size))
 
-	pos2 = list(land['land'].map.values())[-10]
+	pos2 = list(land_pack.land.map.values())[-10]
 	l2 = lv.Living('Eve', 'Eve', pos2)
-	life[l2] = Living_Info(pg.Color(255, 0, 0), living_img(l2.uid, land['land'].terrain_size))
+	life_packs[l2] = Living_package(living = l2,
+							color = pg.Color(255, 0, 0),
+							img = living_img(l2.uid, land_pack.land.terrain_size))
 
-	pos3 = list(land['land'].map.values())[12]
+	pos3 = list(land_pack.land.map.values())[12]
 	l3 = lv.Living('Plissken', 'Plissken', pos3)
-	life[l3] = Living_Info(pg.Color(0, 0, 255), living_img(l3.uid, land['land'].terrain_size))
+	life_packs[l3] = Living_package(living = l3,
+							color = pg.Color(0, 0, 255),
+							img = living_img(l3.uid, land_pack.land.terrain_size))
 
-	return land, life
+	return land_pack, life_packs
 
-def update_world(life: Dict[lv.Living, Draw_Info], land:Dict):
-	for terrain in land['land'].map.values():
+def update_world(life_packs: Dict[lv.Living, Living_package],
+				land_pack:Land_package
+				):
+
+	for terrain in land_pack.land.map.values():
 		terrain.decay()
 		terrain.broadcast()
 
-	for terrain in land['land'].map.values():
+	for terrain in land_pack.land.map.values():
 		terrain.update()
 
-	for l, l_info in life.items():
+	for l, l_info in life_packs.items():
 		l.move()
 		l_info.redraw = True
 
-	for l, l_info in life.items():
+	for l, l_info in life_packs.items():
 		l.act()
 
-	land['info'].redraw = True
+	land_pack.redraw = True
 
 def handle_events(events:List,
-				land:Dict,
-				life:Dict[lv.Living, Living_Info]
+				land_pack:Land_package,
+				life_packs:Dict[lv.Living, Living_package]
 				):
 
 	t_highlights = {}
@@ -110,58 +128,58 @@ def handle_events(events:List,
 		if e.type == pg.MOUSEBUTTONDOWN: # move to update_state
 			if e.button == 1: # left click
 				p = Point(*pg.mouse.get_pos())
-				tar_terrain = land['land'].pixel_to_terrain(p)
+				tar_terrain = land_pack.land.pixel_to_terrain(p)
 				tar_terrain_neighbors = tar_terrain.neighbors if tar_terrain is not None else {}
 				h_color = pg.Color(100, 100, 100)
-				t_highlights = {t:Draw_Info(h_color) for (k, t) in tar_terrain_neighbors.items()}
-				land['info'].redraw = True
-				for living_info in life.values():
+				t_highlights = {t:Terrain_package(terrain = t, color = h_color) for (k, t) in tar_terrain_neighbors.items()}
+				land_pack.redraw = True
+				for living_info in life_pack.values():
 					living_info.redraw = True
 
 	
-	for t in land['land'].map.values():
+	for t in land_pack.land.map.values():
 		if t.smells:
 			max_smell_strength = max(s.strength for s in t.smells.values())
 			strongest_smell = next(smell for smell in t.smells.values() if smell.strength == max_smell_strength)
 			l = strongest_smell.source
-			color = pg.Color(life[l].color)
+			color = pg.Color(life_packs[l].color)
 			inv_strength = round((100 -  max_smell_strength) * 2.55)
 			color.r = max(0, color.r - inv_strength)
 			color.g = max(0, color.g - inv_strength)
 			color.b = max(0, color.b - inv_strength)
-			t_highlights[t] = Draw_Info(color)
+			t_highlights[t] = Terrain_package(terrain = t, color = color)
 
 	return t_highlights
 	
 
 def draw(screen:pg.Surface,
-		land:Dict,
-		life: Dict[lv.Living, Living_Info],
-		terrain_highlights:Dict[te.Terrain, Draw_Info]
+		land_pack:Land_package,
+		life_packs: Dict[lv.Living, Living_package],
+		terrain_highlights:Dict[te.Terrain, Terrain_package]
 		):
 
-	if land['info'].redraw or any(info.redraw for info in life.values()):
+	if land_pack.redraw or any(l_pack.redraw for l_pack in life_packs.values()):
 		screen.fill((0, 0, 0))
-		draw_highlighted_terrain(screen, terrain_highlights, land['land'])
-		draw_life(screen, life, land['land'])
-		draw_land(screen, land)
+		draw_highlighted_terrain(screen, terrain_highlights, land_pack.land)
+		draw_life(screen, life_packs, land_pack.land)
+		draw_land(screen, land_pack)
 		pg.display.flip()
 
-def draw_land(screen:pg.Surface, land:Dict):
-	if land['info'].redraw:
-		for t in land['land'].map.values():
-			pg.draw.polygon(screen, land['info'].color, land['land'].polygon_corners(t), width=1)
-		land['info'].redraw = False
+def draw_land(screen:pg.Surface, land_pack:Land_package):
+	if land_pack.redraw:
+		for t in land_pack.land.map.values():
+			pg.draw.polygon(screen, land_pack.color, land_pack.land.polygon_corners(t), width=1)
+		land_pack.redraw = False
 
-def draw_highlighted_terrain(screen:pg.Surface, terrain:Dict[te.Terrain, Draw_Info], land:ld.Land):
+def draw_highlighted_terrain(screen:pg.Surface, terrain:Dict[te.Terrain, Terrain_package], land:ld.Land):
 	for t, t_info in terrain.items():
 		pg.draw.polygon(screen, t_info.color, land.polygon_corners(t), width=0)
 
-def draw_life(screen:pg.Surface, life:Dict[lv.Living, Draw_Info], land:ld.Land):
-	for liv, info in life.items():
-		if info.redraw:
-			draw_living(screen, liv.position, info.color, info.img, land)
-			info.redraw = False
+def draw_life(screen:pg.Surface, life_packs:Dict[lv.Living, Living_package], land:ld.Land):
+	for liv, l_pack in life_packs.items():
+		if l_pack.redraw:
+			draw_living(screen, liv.position, l_pack.color, l_pack.img, land)
+			l_pack.redraw = False
 
 def draw_living(screen:pg.Surface, position:te.Terrain, color:pg.Color, img:pg.Surface, land:ld.Land):
 	#pg.draw.polygon(screen, color, land.polygon_corners(position), width=0)
