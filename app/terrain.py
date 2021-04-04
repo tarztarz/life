@@ -34,10 +34,7 @@ class Terrain:
 
 	def update_smells(self):
 		inc_smells = {}
-		#print('---------------')
-		#print('checking neighbors of {}'.format(self))
 		for n in self.neighbors.values():
-			#print('{}: {}'.format(n,n.emission.smells))
 			for n_source, n_smell in n.emission.smells.items():
 				if n_source not in inc_smells:
 					inc_smells[n_source] = lv.Smell(n_source, n_smell.strength)
@@ -52,13 +49,6 @@ class Terrain:
 				self.smells[k] = inc_smells[k] if inc_smells[k].strength > self.smells[k].strength else self.smells[k]
 			elif k not in inc_smells:
 				pass
-
-		#print('--------------')
-		#print('{} FINAL SMELL: {}'.format(self,self.smells))
-		#print('--------------')
-
-
-		# so, terrains are emitting correectly, but the neighbors are not receiving the right emissions... who knows why
 
 	def direction_to(self, neighbor:'Terrain'):
 		return neighbor.polygon - self.polygon

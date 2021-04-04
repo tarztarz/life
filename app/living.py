@@ -7,6 +7,7 @@ class LivingState(Enum): # TODO: implement as class with getter and setters
 	SEARCHING = 1
 	HUNTING = 2
 	RESTING = 3
+	FIGHTING = 4
 
 class Living:
 	def __init__(self, uid:int, name:str, position:'ld.Terrain'):
@@ -18,6 +19,7 @@ class Living:
 		self.state = LivingState.RESTING
 		self.hunt_smell = None #Smell / change to aura later
 		self.smell_decay_strength = 20
+		self.targets = []
 
 	def __repr__(self):
 		return 'Living(uid:{}, name:{}, position:{}, state:{})'.format(self.uid, self.name, self.position, self.state)
@@ -40,16 +42,26 @@ class Living:
 			self.position = self.path.pop(0)
 			self.last_direction = last_position.direction_to(self.position)
 
-	def set_state(self, lstate:LivingState, aura:'Smell' = None): #TODO smell, for now
-		if lstate == LivingState.SEARCHING:
+	def set_state(self, l_state:LivingState, aura:'Smell' = None, target:'Living' = None): #TODO smell, for now
+		if l_state == LivingState.SEARCHING:
 			self.hunt_smell = None
+			self.targets = []
 			self.state = LivingState.SEARCHING
-		elif lstate == LivingState.HUNTING:
+
+		elif l_state == LivingState.HUNTING:
 			self.hunt_smell = aura
+			self.targets = []
 			self.state = LivingState.HUNTING
-		elif lstate == LivingState.RESTING:
+
+		elif l_state == LivingState.RESTING:
 			self.hunt_smell = None
+			self.targets = []
 			self.state = LivingState.RESTING
+
+		elif l_state == LivingState.FIGHTING:
+			self.hunt_smell = None
+			self.targets.append(target)
+			self.state = LivingState.FIGHTING
 
 	def update_state(self): # search for whatever it is that drives me. Implement simple any smell search first
 		if self.state == LivingState.SEARCHING:
@@ -61,7 +73,12 @@ class Living:
 
 		elif self.state == LivingState.HUNTING:
 			prey = self.hunt_smell.source
-			if prey not in self.position.smells:
+
+			if prey.position in self.position.neighbors.values():
+				self.set_state(LivingState.FIGHTING, target = prey)
+				print(f'{self} engaged its prey!')
+
+			elif prey not in self.position.smells:
 				self.set_state(LivingState.SEARCHING)
 				print('{} lost its prey!'.format(self))
 				
