@@ -109,6 +109,8 @@ def update_world(life_packs: Dict[lv.Living, Living_package],
 	for terrain in land_pack.land.map.values():
 		terrain.update()
 
+	# TODO: remove a living if it is dead
+
 	for l, l_info in life_packs.items():
 		l.move()
 		l_info.redraw = True
